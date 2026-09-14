@@ -21,3 +21,13 @@ The engine's injected test network validator is used only by instrumentation cod
 - Check OEM battery management and large-font layouts on the target phone.
 
 A synthetic fixture passing does not establish permission or compatibility for any particular third-party video. No live social-platform download is claimed as tested unless a later validation record names that test and result.
+
+## 0.1.1 Instagram regression checks
+
+- Real yt-dlp 2026.08.19 Instagram extraction against synthetic public webpage responses with browser impersonation unavailable, matching the Android capability. Also checks that login redirects, gated media, and explicit access restrictions do not turn into media formats.
+- JVM checks for canonical Instagram share variants, unchanged direct-media signatures, ambiguous extractor errors, rate limits, explicit restrictions, and redacted diagnostic text.
+- Android instrumentation writes a stale extractor into the real installation location, installs the new bundled asset, verifies idempotency, and executes the actual Android Python runtime to assert version 2026.08.19.
+- Existing native video/MP3/MediaStore and share-panel tests remain mandatory.
+- A separate metadata-only probe uses Instagram's official test reel from upstream's test list. Its status is recorded in distribution/Instagram-metadata-check.json. Platform blocking of CI is a diagnostic outcome, never represented as successful live downloading.
+
+The user's exact reported reel was not supplied as a URL. Reproduction of that particular link on the user's network remains a device check.

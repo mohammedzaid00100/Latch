@@ -37,7 +37,7 @@ object LinkParser {
                 Provider.YOUTUBE
             }
             "instagram.com", "www.instagram.com", "m.instagram.com" -> {
-                require(listOf("/reel/", "/reels/", "/p/", "/tv/").any { path.startsWith(it) })
+                require(Regex("""^/(?:[A-Za-z0-9_.]+/)?(reels?|p|tv)/[A-Za-z0-9_-]+/?$""").matches(path))
                 Provider.INSTAGRAM
             }
             "facebook.com", "www.facebook.com", "m.facebook.com", "web.facebook.com", "fb.watch" -> {
@@ -48,6 +48,14 @@ object LinkParser {
                 require(path.substringAfterLast('.').lowercase(Locale.ROOT) in mediaExtensions)
                 Provider.DIRECT
             }
+        }
+        if (provider == Provider.INSTAGRAM) {
+            val match = Regex("""^/(?:[A-Za-z0-9_.]+/)?(reels?|p|tv)/([A-Za-z0-9_-]+)/?$""")
+                .matchEntire(path) ?: error("Share a single Instagram Reel or video post.")
+            val shortcode = match.groupValues[2]
+            require(shortcode != "audio" && shortcode.length <= 80)
+            val kind = if (match.groupValues[1] == "reels") "reel" else match.groupValues[1]
+            return SharedLink("https://www.instagram.com/$kind/$shortcode/", provider)
         }
         return SharedLink(uri.toASCIIString(), provider)
     }

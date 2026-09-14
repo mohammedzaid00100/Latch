@@ -19,6 +19,7 @@ class MediaEngine(private val context: Context, private val networkValidation: (
     suspend fun initialize() = withContext(Dispatchers.IO) {
         initLock.withLock {
             if (!initialized) {
+                ExtractorBundle.install(context)
                 YoutubeDL.init(context)
                 FFmpeg.init(context)
                 initialized = true
@@ -32,7 +33,6 @@ class MediaEngine(private val context: Context, private val networkValidation: (
         addOption("--retries", 2)
         addOption("--fragment-retries", 2)
         addOption("--age-limit", 0)
-        addOption("--no-warnings")
         addOption("--no-cache-dir")
     }
     private fun validateNetwork(url: String) {
@@ -108,22 +108,4 @@ class MediaEngine(private val context: Context, private val networkValidation: (
         }
     }
     fun cancel(id: String) { YoutubeDL.destroyProcessById(id) }
-}
-fun friendlyError(error: Throwable): String {
-    if (error is TimeoutCancellationException) return "The source took too long to respond. Check your connection and try again."
-    val message = error.message.orEmpty().lowercase()
-    return when {
-        "age" in message && ("restrict" in message || "limit" in message) -> "Age-restricted media is not supported."
-        "private" in message || "login" in message || "log in" in message || "sign in" in message || "cookies" in message ->
-            "This source requires access or sign-in. Latch supports links available without an account."
-        "429" in message || "rate" in message && "limit" in message -> "The platform is limiting requests. Wait before trying again."
-        "403" in message || "forbidden" in message || "bot" in message -> "The platform blocked this request. Try later or use its own download option."
-        "404" in message || "unavailable" in message || "removed" in message -> "This video is unavailable or has been removed."
-        "unsupported" in message -> "This link or media format is not supported."
-        "space" in message || "storage" in message || "enospc" in message -> "Not enough free storage. Free some space and retry."
-        "network" in message || "resolve" in message || "timed out" in message || "connection" in message ->
-            "Could not reach the source. Check your internet connection and try again."
-        error is IllegalArgumentException || error is IllegalStateException -> error.message.orEmpty().take(220)
-        else -> "The source could not complete this request. Retry, choose another quality, or check for a newer Latch build."
-    }
 }

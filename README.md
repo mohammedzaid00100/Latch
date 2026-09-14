@@ -6,9 +6,17 @@ Share a supported video link to Latch, choose video or audio and an available fo
 
 ## Install the test APK
 
-Open this repository's **Actions** tab, open the latest successful **Build and test Latch** run, and download the **Latch-Android-APK** artifact. Unzip it and install **Latch-0.1.0-arm64.apk**.
+Open this repository's **Actions** tab, open the latest successful **Build and test Latch** run, and download the **Latch-Android-APK** artifact. Unzip it and install **Latch-0.1.1-arm64.apk**.
 
 The test build supports Android 10 or later on ARM64 phones, including the hardware architecture used by the Poco M7 5G. Actual device compatibility must still be checked. This is a development-signed APK, not a Play Store release.
+
+## Instagram fix in 0.1.1
+
+This update replaces the November 2025 extractor bundled in 0.1.0 with the checksum-pinned yt-dlp 2026.08.19 release, including upstream's 2026 Instagram rewrite and Android-compatible webpage fallback. Installing the update also replaces any old extractor retained in app data; clearing app data is unnecessary.
+
+Instagram links are normalized to the canonical HTTPS URL while preserving the complete post ID. Errors now distinguish an ambiguous Instagram response from a definite login requirement or rate limit. Use **Copy error details** on the share panel to report a remaining failure; copied details omit URLs and session values.
+
+Install the APK over the previous version. Downloads and settings are retained when Android accepts the existing development signature.
 
 ## Use it
 
@@ -49,7 +57,7 @@ Receiving a shared link does not guarantee permission or ability to download it.
 
 Private, DRM-protected, age-restricted and live media are unsupported. There is no account login, cookie import, paywall bypass or hidden download service. A platform can change or block access at any time. Download support therefore needs continuing maintenance.
 
-The app contains real adapters, not hardcoded success responses. Building successfully does not prove that all current Instagram, Facebook and YouTube links work. See the Actions results and [testing notes](docs/TESTING.md) for the actual verification scope.
+The app contains real adapters, not hardcoded success responses. Building successfully does not prove that all current Instagram, Facebook and YouTube links work. See the Actions results and [testing notes](docs/TESTING.md) for the actual verification scope. The APK ZIP also includes an explicitly labeled live Instagram metadata probe result from the CI network; it is not a phone download test.
 
 ## Build on Windows
 
@@ -63,7 +71,7 @@ From the project directory:
 
 The result is **app/build/outputs/apk/debug/app-debug.apk**.
 
-The Android build plugin, Kotlin, Compose, Room and media dependencies are pinned in the Gradle files. No API key or backend is required.
+The Android build plugin, Kotlin, Compose, Room and media dependencies are pinned in the Gradle files. The pre-build task downloads the pinned extractor from its official GitHub release and verifies SHA-256 before packaging. The app installs that verified APK asset locally and does not fetch executable updates at runtime. No API key or backend is required.
 
 For emulator media tests, generate the synthetic fixture using the FFmpeg command in the workflow, then run:
 

@@ -30,6 +30,7 @@ class UiSmokeTest {
                 compose.onAllNodesWithText("Couldn't open this link").fetchSemanticsNodes().isNotEmpty()
             }
             compose.onNodeWithText("Couldn't open this link").assertIsDisplayed()
+            compose.onNodeWithText("Copy error details").assertIsDisplayed()
             screenshot("share-error.png")
             compose.onNodeWithContentDescription("Close download panel").performClick()
         }

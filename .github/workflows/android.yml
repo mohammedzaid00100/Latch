@@ -33,11 +33,15 @@ jobs:
           chmod +x gradlew
       - name: Build the phone APK and run unit tests and lint
         run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug -PlatchAbis=arm64-v8a
+      - name: Test the current Instagram webpage fallback
+        run: python3 tools/test_instagram_extractor.py
+      - name: Check public Instagram metadata
+        run: python3 tools/probe_instagram.py
       - name: Package the phone APK
         run: |
           mkdir -p distribution
-          cp app/build/outputs/apk/debug/app-debug.apk distribution/Latch-0.1.0-arm64.apk
-          sha256sum distribution/Latch-0.1.0-arm64.apk > distribution/SHA256SUMS.txt
+          cp app/build/outputs/apk/debug/app-debug.apk distribution/Latch-0.1.1-arm64.apk
+          sha256sum distribution/Latch-0.1.1-arm64.apk > distribution/SHA256SUMS.txt
       - name: Make a synthetic media fixture
         run: |
           sudo apt-get update -qq

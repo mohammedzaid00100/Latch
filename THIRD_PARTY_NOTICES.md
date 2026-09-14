@@ -14,7 +14,11 @@ Latch's application source is original and licensed under GNU GPL version 3. It 
 
 ## yt-dlp
 - Upstream source and license: https://github.com/yt-dlp/yt-dlp
-- The bundled revision is supplied by the pinned Android library; consult its raw resource and build records.
+- Active extractor: official yt-dlp 2026.08.19 zipimport release, replacing the wrapper's legacy extractor at initialization.
+- Exact source: https://github.com/yt-dlp/yt-dlp/tree/2026.08.19
+- Release: https://github.com/yt-dlp/yt-dlp/releases/tag/2026.08.19
+- Artifact SHA-256: 1fa6733c37ea6fb51c99ad8fe785e7b7e5f3246c9b980230329d4fb72ed8d4d6.
+- The checksum-verified executable is included in the downloadable application source archive. The Gradle build pins and verifies the official artifact.
 - Core source uses the Unlicense; bundled components retain their individual licenses.
 
 ## FFmpeg

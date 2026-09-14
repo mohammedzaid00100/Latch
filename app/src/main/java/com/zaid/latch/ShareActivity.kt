@@ -20,7 +20,7 @@ import com.zaid.latch.ui.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-data class ShareState(val loading: Boolean = true, val media: MediaInfo? = null, val error: String = "")
+data class ShareState(val loading: Boolean = true, val media: MediaInfo? = null, val error: String = "", val errorDetails: String = "")
 class ShareModel(app: Application) : AndroidViewModel(app) {
     private val mutableState = MutableStateFlow(ShareState())
     val state = mutableState.asStateFlow()
@@ -34,16 +34,19 @@ class ShareModel(app: Application) : AndroidViewModel(app) {
         job?.cancel()
         mutableState.value = ShareState()
         job = viewModelScope.launch {
+            var link: SharedLink? = null
             try {
-                val link = LinkParser.parse(text)
+                link = LinkParser.parse(text)
                 val graph = getApplication<Application>().graph
                 graph.ready.await()
                 mutableState.value = ShareState(loading = false, media = graph.engine.resolve(link))
             } catch (e: TimeoutCancellationException) {
-                mutableState.value = ShareState(loading = false, error = friendlyError(e))
+                mutableState.value = ShareState(loading = false, error = DownloadErrors.describe(e, link?.provider).message,
+                    errorDetails = DownloadErrors.details(e, link?.provider))
             } catch (e: CancellationException) { throw e }
             catch (e: Throwable) {
-                mutableState.value = ShareState(loading = false, error = friendlyError(e))
+                mutableState.value = ShareState(loading = false, error = DownloadErrors.describe(e, link?.provider).message,
+                    errorDetails = DownloadErrors.details(e, link?.provider))
             }
         }
     }

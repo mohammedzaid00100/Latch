@@ -17,7 +17,7 @@ class MediaRulesTest {
     @Test fun sharedCaptionFindsSupportedLink() {
         val result = LinkParser.parse("Have a look! https://example.com/about and https://www.instagram.com/reel/abc123/?igsh=hello")
         assertEquals(Provider.INSTAGRAM, result.provider)
-        assertTrue(result.url.contains("igsh=hello"))
+        assertEquals("https://www.instagram.com/reel/abc123/", result.url)
     }
     @Test fun supportsYoutubeShortsAndFacebookShareLinks() {
         assertEquals(Provider.YOUTUBE, LinkParser.parse("https://youtube.com/shorts/abc123").provider)

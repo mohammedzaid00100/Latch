@@ -344,6 +344,7 @@ private fun SettingsScreen(preferences: UserPreferences, hasActive: Boolean, mod
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Latch ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.titleMedium)
+                Text("Download engine ${BuildConfig.EXTRACTOR_VERSION}", style = MaterialTheme.typography.bodySmall)
                 Text("Made by Mohammed Zaid.", style = MaterialTheme.typography.bodyMedium)
                 Text("Built with youtubedl-android, yt-dlp and FFmpeg. GPLv3; no warranty. Source and dependency notices are in the repository.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

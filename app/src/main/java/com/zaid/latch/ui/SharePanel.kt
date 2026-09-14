@@ -32,6 +32,7 @@ import kotlinx.coroutines.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SharePanel(state: ShareState, preferences: UserPreferences, onRetry: () -> Unit, onClose: () -> Unit) {
+    val context = LocalContext.current
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
         onDismissRequest = onClose, sheetState = sheet,
@@ -63,6 +64,17 @@ fun SharePanel(state: ShareState, preferences: UserPreferences, onRetry: () -> U
                         }
                     }
                     Button(onClick = onRetry, modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(16.dp)) { Text("Try again") }
+                    if (state.errorDetails.isNotBlank()) {
+                        TextButton(onClick = {
+                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Latch error details", state.errorDetails))
+                            Toast.makeText(context, "Error details copied.", Toast.LENGTH_SHORT).show()
+                        }, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Rounded.ContentCopy, null, Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Copy error details")
+                        }
+                    }
                     TextButton(onClick = onClose, modifier = Modifier.fillMaxWidth()) { Text("Go back") }
                 }
                 state.media != null -> MediaOptions(state.media, preferences, onClose)
