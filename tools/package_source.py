@@ -6,7 +6,7 @@ import zipfile
 
 root = pathlib.Path(__file__).resolve().parent.parent
 tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode().split("\0")
-additional = ["gradle/wrapper/gradle-wrapper.jar"]
+additional = ["gradle/wrapper/gradle-wrapper.jar", "app/src/androidTest/assets/latch-test.mp4"]
 additional += [str(p.relative_to(root)) for p in (root / "app/schemas").rglob("*.json")] if (root / "app/schemas").exists() else []
 destination = root / "distribution/Latch-Source.zip"
 destination.parent.mkdir(exist_ok=True)
