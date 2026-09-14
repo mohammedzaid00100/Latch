@@ -117,8 +117,8 @@ private fun HomeScreen(records: List<DownloadRecord>, modifier: Modifier, onLibr
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(onClick = {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        url = clipboard.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        url = clipboard.primaryClip?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty().take(16000)
                         if (url.isBlank()) Toast.makeText(context, "Copy a video link first.", Toast.LENGTH_SHORT).show()
                     }, modifier = Modifier.weight(1f).height(52.dp), shape = RoundedCornerShape(16.dp)) {
                         Icon(Icons.Rounded.ContentPaste, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text("Paste")
@@ -195,7 +195,7 @@ fun DownloadCard(record: DownloadRecord) {
             val uri = Uri.parse(record.savedUri)
             runCatching {
                 val intent = if (share) Intent(Intent.ACTION_SEND).setType(record.mimeType)
-                    .putExtra(Intent.EXTRA_STREAM, uri).setClipData(ClipData.newRawUri(record.title, uri))
+                    .putExtra(Intent.EXTRA_STREAM, uri).apply { clipData = ClipData.newRawUri(record.title, uri) }
                     .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 else Intent(Intent.ACTION_VIEW).setDataAndType(uri, record.mimeType).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 context.startActivity(Intent.createChooser(intent, if (share) "Share saved file" else "Open saved file"))
