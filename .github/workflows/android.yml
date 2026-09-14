@@ -1,0 +1,85 @@
+name: Build and test Latch
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: latch-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a
+      - name: Preserve the development signing key for test updates
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ~/.android/debug.keystore
+          key: latch-development-signing-v1
+      - name: Prepare verified Gradle wrapper
+        run: |
+          python3 tools/bootstrap_wrapper.py
+          chmod +x gradlew
+      - name: Build the phone APK and run unit tests and lint
+        run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug -PlatchAbis=arm64-v8a
+      - name: Package the phone APK
+        run: |
+          mkdir -p distribution
+          cp app/build/outputs/apk/debug/app-debug.apk distribution/Latch-0.1.0-arm64.apk
+          sha256sum distribution/Latch-0.1.0-arm64.apk > distribution/SHA256SUMS.txt
+      - name: Make a synthetic media fixture
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          mkdir -p app/src/androidTest/assets
+          ffmpeg -hide_banner -loglevel error -f lavfi -i color=c=0xc8f56b:s=320x180:r=24 -f lavfi -i sine=frequency=440:sample_rate=44100 -t 2 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -c:a aac -b:a 96k -movflags +faststart -shortest app/src/androidTest/assets/latch-test.mp4
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Test the actual native engine and Android screens
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          script: |
+            ./gradlew --no-daemon connectedDebugAndroidTest -PlatchAbis=x86_64
+            adb pull /sdcard/Android/data/com.zaid.latch/files/screenshots distribution/screenshots
+      - name: Package source and notices
+        if: success()
+        run: |
+          python3 tools/package_source.py
+          cp LICENSE THIRD_PARTY_NOTICES.md README.md distribution/
+      - name: Upload installable APK and source
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Latch-Android-APK
+          path: distribution/
+          retention-days: 90
+          if-no-files-found: error
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: Latch-Test-Reports
+          path: |
+            app/build/reports/
+            app/build/outputs/androidTest-results/
+          retention-days: 30
